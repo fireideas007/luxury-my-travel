@@ -76,6 +76,18 @@ export const Itinerary: React.FC<ItineraryProps> = ({
     }
   }, [currentUser]);
 
+  // Prevent background scrolling when passenger modal is open
+  useEffect(() => {
+    if (showPassengerModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showPassengerModal]);
+
   // Seat & Meal Selection State
   const [selectedSeat, setSelectedSeat] = useState<string>('1A');
   const [mealPreference, setMealPreference] = useState<string>('Beluga Caviar & Dom Pérignon');
@@ -1127,35 +1139,9 @@ export const Itinerary: React.FC<ItineraryProps> = ({
         const airlineName = flightData.specs?.['Carrier'] || 'Private Charter Line';
 
         return (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(3, 3, 5, 0.85)',
-            backdropFilter: 'blur(12px)',
-            zIndex: 3000,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '1.5rem'
-          }} onClick={() => setShowPassengerModal(false)}>
+          <div className="passenger-modal-overlay" onClick={() => setShowPassengerModal(false)}>
             
-            <div style={{
-              width: '100%',
-              maxWidth: '850px',
-              maxHeight: '90vh',
-              background: 'rgba(18, 18, 24, 0.98)',
-              border: '1px solid rgba(223, 195, 132, 0.25)',
-              borderRadius: 'var(--radius-xl)',
-              boxShadow: 'var(--shadow-premium), 0 20px 50px rgba(0,0,0,0.8)',
-              overflowY: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-              position: 'relative',
-              animation: 'modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-            }} onClick={(e) => e.stopPropagation()}>
+            <div className="passenger-modal-container" onClick={(e) => e.stopPropagation()}>
 
               {/* Close Button */}
               <button 
@@ -1182,24 +1168,19 @@ export const Itinerary: React.FC<ItineraryProps> = ({
               </button>
 
               {/* Form Content */}
-              <form onSubmit={handleConfirmFlightBooking} style={{ display: 'flex', flexDirection: 'column' }}>
+              <form onSubmit={handleConfirmFlightBooking} className="passenger-modal-form">
                 
                 {/* Header */}
-                <div style={{ padding: '2rem 2.5rem 1.5rem 2.5rem', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <Plane size={24} style={{ color: 'var(--color-gold)' }} />
-                  <div>
-                    <h3 style={{ fontSize: '1.6rem', fontWeight: 500, fontFamily: 'var(--font-serif)' }}>Luxury Booking Details</h3>
+                <div className="passenger-modal-header">
+                  <Plane size={24} style={{ color: 'var(--color-gold)', flexShrink: 0 }} />
+                  <div style={{ flexGrow: 1, paddingRight: '2rem' }}>
+                    <h3 style={{ fontSize: '1.6rem', fontWeight: 500, fontFamily: 'var(--font-serif)', margin: 0 }}>Luxury Booking Details</h3>
                     <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', margin: 0 }}>Configure passenger credentials and secure private suite assignment on {airlineName}</p>
                   </div>
                 </div>
 
                 {/* Form Body Split */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1.2fr 1fr',
-                  gap: '2.5rem',
-                  padding: '2.5rem'
-                }} className="form-split">
+                <div className="passenger-modal-body form-split">
                   
                   {/* Left Column: Passenger Info */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -1554,14 +1535,7 @@ export const Itinerary: React.FC<ItineraryProps> = ({
                 </div>
 
                 {/* Form Footer Buttons */}
-                <div style={{
-                  padding: '1.5rem 2.5rem',
-                  borderTop: '1px solid var(--color-border)',
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: '1rem',
-                  background: 'rgba(6, 6, 8, 0.4)'
-                }}>
+                <div className="passenger-modal-footer">
                   <button 
                     type="button"
                     onClick={() => setShowPassengerModal(false)}
@@ -1594,7 +1568,112 @@ export const Itinerary: React.FC<ItineraryProps> = ({
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
+
+        /* Passenger Modal Styles */
+        .passenger-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(3, 3, 5, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          z-index: 3000;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 1.5rem;
+          box-sizing: border-box;
+        }
+
+        .passenger-modal-container {
+          width: 100%;
+          max-width: 850px;
+          max-height: 90vh;
+          background: rgba(18, 18, 24, 0.98);
+          border: 1px solid rgba(223, 195, 132, 0.25);
+          border-radius: var(--radius-xl);
+          box-shadow: var(--shadow-premium), 0 20px 50px rgba(0,0,0,0.8);
+          display: flex;
+          flex-direction: column;
+          position: relative;
+          overflow: hidden;
+          animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .passenger-modal-form {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          max-height: 90vh;
+          overflow: hidden;
+        }
+
+        .passenger-modal-header {
+          padding: 2rem 2.5rem 1.5rem 2.5rem;
+          border-bottom: 1px solid var(--color-border);
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          flex-shrink: 0;
+        }
+
+        .passenger-modal-body {
+          padding: 2.5rem;
+          overflow-y: auto;
+          flex-grow: 1;
+          scrollbar-width: thin;
+          scrollbar-color: var(--color-gold) rgba(0,0,0,0.2);
+        }
+
+        .passenger-modal-body::-webkit-scrollbar {
+          width: 6px;
+        }
+        .passenger-modal-body::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.2);
+        }
+        .passenger-modal-body::-webkit-scrollbar-thumb {
+          background-color: var(--color-gold);
+          border-radius: 3px;
+        }
+
+        .passenger-modal-footer {
+          padding: 1.5rem 2.5rem;
+          border-top: 1px solid var(--color-border);
+          display: flex;
+          justify-content: flex-end;
+          gap: 1rem;
+          background: rgba(6, 6, 8, 0.4);
+          flex-shrink: 0;
+        }
+
         @media (max-width: 768px) {
+          .passenger-modal-overlay {
+            padding: 0 !important;
+          }
+          .passenger-modal-container {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            border: none !important;
+            border-radius: 0 !important;
+          }
+          .passenger-modal-form {
+            height: 100vh !important;
+            max-height: 100vh !important;
+          }
+          .passenger-modal-header {
+            padding: 1.25rem 1.5rem 1rem 1.5rem !important;
+          }
+          .passenger-modal-body {
+            padding: 1.5rem !important;
+          }
+          .passenger-modal-footer {
+            padding: 1rem 1.5rem !important;
+          }
+          
           .itinerary-layout {
             grid-template-columns: 1fr !important;
             gap: 2rem !important;
