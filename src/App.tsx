@@ -9,7 +9,7 @@ import { BlogSystem } from './components/BlogSystem';
 import { AboutUs } from './components/AboutUs';
 import type { LuxuryItem } from './data/mockData';
 import { allLuxuryItems } from './data/mockData';
-import { ShieldCheck, ArrowRight } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { TravelService } from './services/travelService';
 import { MembershipModal } from './components/MembershipModal';
 import type { BookedCuration, UserAccount, PaymentTransaction } from './data/mockData';
@@ -931,20 +931,9 @@ function App() {
                   <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-serif)', marginBottom: '1rem', fontWeight: 400 }}>
                     High-Fidelity Connected Infrastructure
                   </h3>
-                  <p style={{ color: 'var(--color-text-secondary)', maxWidth: '600px', margin: '0 auto 2.5rem auto', fontSize: '0.95rem' }}>
+                  <p style={{ color: 'var(--color-text-secondary)', maxWidth: '600px', margin: '0 auto', fontSize: '0.95rem' }}>
                     Luxury My Travel interacts directly with partner environments representing live booking networks. Our architecture parses flight specs and stay profiles using raw travel schemas.
                   </p>
-                  <button 
-                    onClick={() => {
-                      const apiTab = document.getElementById('btn-navbar-api-sandbox');
-                      if (apiTab) apiTab.click();
-                    }}
-                    className="btn-primary"
-                    style={{ fontSize: '0.8rem', padding: '0.75rem 1.75rem' }}
-                  >
-                    <span>Observe API Payload Inspector</span>
-                    <ArrowRight size={14} />
-                  </button>
                 </section>
               </>
             )}
