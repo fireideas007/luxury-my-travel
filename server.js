@@ -209,35 +209,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-// Configure paths for Cloudflare SSL certificates
-const certPath = path.join(__dirname, 'certs', 'cert.pem');
-const keyPath = path.join(__dirname, 'certs', 'key.pem');
-
-if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
-  try {
-    const sslOptions = {
-      cert: fs.readFileSync(certPath),
-      key: fs.readFileSync(keyPath)
-    };
-    
-    // In production, the Node HTTPS server will listen on port 443
-    const securePort = process.env.SECURE_PORT || 443;
-    https.createServer(sslOptions, app).listen(securePort, () => {
-      console.log(`Production HTTPS server running on port ${securePort}`);
-    });
-
-    // Run HTTP on port 8080 as a fallback / healthcheck port
-    app.listen(port, () => {
-      console.log(`Production HTTP fallback server running on port ${port}`);
-    });
-  } catch (err) {
-    console.error("Failed to start secure HTTPS server:", err);
-    app.listen(port, () => {
-      console.log(`Fallback HTTP server listening on port ${port}`);
-    });
-  }
-} else {
-  app.listen(port, () => {
-    console.log(`Standalone Express HTTP server running on port ${port}`);
-  });
-}
+app.listen(port, () => {
+  console.log(`Standalone Express HTTP server running on port ${port}`);
+});
