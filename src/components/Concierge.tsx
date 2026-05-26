@@ -44,7 +44,7 @@ export const Concierge: React.FC<ConciergeProps> = ({ onAddToItinerary, triggerA
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSendMessage = (text: string, type?: string) => {
+  const handleSendMessage = async (text: string, type?: string) => {
     if (!text.trim()) return;
 
     // Add user message
@@ -54,78 +54,64 @@ export const Concierge: React.FC<ConciergeProps> = ({ onAddToItinerary, triggerA
       text,
       timestamp: new Date()
     };
-    setMessages(prev => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     setInputText('');
     setIsTyping(true);
 
-    // Simulate concierge thinking & querying APIs
-    setTimeout(() => {
-      let replyText = '';
-      let recommendations: LuxuryItem[] = [];
-      let apiSourceInfo = '';
+    const catalog = [
+      ...travelList.map(t => ({ type: 'travel', data: t })),
+      ...stayList.map(s => ({ type: 'stay', data: s })),
+      ...foodList.map(f => ({ type: 'food', data: f })),
+      ...experienceList.map(e => ({ type: 'experience', data: e }))
+    ];
 
-      const lctype = type || text.toLowerCase();
+    try {
+      const response = await fetch('/api/concierge/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: updatedMessages.map(m => ({ sender: m.sender, text: m.text })),
+          catalog
+        })
+      });
 
-      if (lctype.includes('como') || lctype.includes('lake_como') || lctype.includes('italy')) {
-        apiSourceInfo = 'Luxury Lodging & Dining Registries';
-        replyText = "An outstanding choice. Lake Como represents the pinnacle of Italian romance. I have consulted our dining curations database and Luxury Yacht Charter registries. Here are my elite recommendations for your getaway: Villa d'Este, the iconic Benetti Oasis superyacht, and a dining reservation at Osteria Francescana in nearby Modena.";
-        
-        // Match Villa d'Este, Benetti Oasis, Osteria Francescana
-        const villa = stayList.find(s => s.id === 's-3');
-        const yacht = travelList.find(t => t.id === 't-3');
-        const dining = foodList.find(f => f.id === 'f-3');
-        
-        if (yacht) recommendations.push({ type: 'travel', data: yacht });
-        if (villa) recommendations.push({ type: 'stay', data: villa });
-        if (dining) recommendations.push({ type: 'food', data: dining });
-
-        // Trigger Sandbox API logs
-        triggerApiLog('LodgingService', 'GET /v2/shopping/charters/yachts', { location: "Lake Como" }, { data: [yacht] });
-        triggerApiLog('ConciergeRegistry', 'GET /v1/location/s-3/details', { locationId: "s-3" }, { data: villa });
-
-      } else if (lctype.includes('maldives') || lctype.includes('jet') || lctype.includes('flight')) {
-        apiSourceInfo = 'Aviation Charter & Luxury Stays systems';
-        replyText = "To ensure absolute privacy and luxury, I have arranged flight paths for a Gulfstream G650ER private charter, combined with an overwater retreat at Soneva Jani, Maldives retrieved from our luxury accommodations registry.";
-        
-        const jet = travelList.find(t => t.id === 't-1');
-        const soneva = stayList.find(s => s.id === 's-1');
-        const islandEx = experienceList.find(e => e.id === 'e-3');
-
-        if (jet) recommendations.push({ type: 'travel', data: jet });
-        if (soneva) recommendations.push({ type: 'stay', data: soneva });
-        if (islandEx) recommendations.push({ type: 'experience', data: islandEx });
-
-        triggerApiLog('AirService', 'POST /v1/offer_requests', { origin: "LHR", destination: "MLE" }, { data: { offers: [jet] } });
-        triggerApiLog('LodgingService', 'GET /v3/shopping/hotel-offers', { hotelId: "s-1" }, { data: soneva });
-
-      } else if (lctype.includes('michelin') || lctype.includes('food') || lctype.includes('dining')) {
-        apiSourceInfo = 'Gourmet Culinary Registries';
-        replyText = "For the refined palate, I have queried our elite culinary database. I recommend reserving a table at Mirazur in Menton, France (3 Michelin Stars) and dropping by the famous Connaught Bar in Mayfair, London. I can also schedule an exclusive private wine-tasting excursion.";
-        
-        const mirazur = foodList.find(f => f.id === 'f-1');
-        const connaught = foodList.find(f => f.id === 'f-2');
-        const wineEx = experienceList.find(e => e.id === 'e-1'); // Volcano/Champagne landing acts as high end
-
-        if (mirazur) recommendations.push({ type: 'food', data: mirazur });
-        if (connaught) recommendations.push({ type: 'food', data: connaught });
-        if (wineEx) recommendations.push({ type: 'experience', data: wineEx });
-
-        triggerApiLog('ConciergeRegistry', 'GET /v1/location/f-1/details', { locationId: "f-1" }, { data: mirazur });
-        triggerApiLog('ConciergeRegistry', 'GET /v1/location/f-2/details', { locationId: "f-2" }, { data: connaught });
-
-      } else {
-        apiSourceInfo = 'Bespoke Curations Registry';
-        replyText = `I have received your request for "${text}". I have queried our linked travel and dining systems. Let me recommend these outstanding location-dependent bespoke selections to construct your ultimate itinerary:`;
-        
-        // Default recommendation selection
-        const exp = experienceList[1] || experienceList[0];
-        const stay = stayList[1] || stayList[0];
-        
-        if (stay) recommendations.push({ type: 'stay', data: stay });
-        if (exp) recommendations.push({ type: 'experience', data: exp });
-
-        triggerApiLog('LodgingService', 'GET /v3/shopping/hotel-offers', { search: text }, { data: [stay] });
+      if (!response.ok) {
+        throw new Error('Fallback to mock');
       }
+
+      const data = await response.json();
+      const replyText = data.reply;
+
+      // Extract recommendations based on keywords in response text
+      const recommendations: LuxuryItem[] = [];
+      const lowerReply = replyText.toLowerCase();
+      
+      travelList.forEach(t => {
+        if (lowerReply.includes(t.name.toLowerCase()) && !recommendations.some(r => r.data.id === t.id)) {
+          recommendations.push({ type: 'travel', data: t });
+        }
+      });
+      stayList.forEach(s => {
+        if (lowerReply.includes(s.name.toLowerCase()) && !recommendations.some(r => r.data.id === s.id)) {
+          recommendations.push({ type: 'stay', data: s });
+        }
+      });
+      foodList.forEach(f => {
+        if (lowerReply.includes(f.name.toLowerCase()) && !recommendations.some(r => r.data.id === f.id)) {
+          recommendations.push({ type: 'food', data: f });
+        }
+      });
+      experienceList.forEach(e => {
+        if (lowerReply.includes(e.name.toLowerCase()) && !recommendations.some(r => r.data.id === e.id)) {
+          recommendations.push({ type: 'experience', data: e });
+        }
+      });
+
+      // Log to inspect panel
+      triggerApiLog('ConciergeRegistry', 'POST /api/concierge/chat', { prompt: text }, { reply: replyText });
 
       setIsTyping(false);
       setMessages(prev => [...prev, {
@@ -134,9 +120,89 @@ export const Concierge: React.FC<ConciergeProps> = ({ onAddToItinerary, triggerA
         text: replyText,
         timestamp: new Date(),
         recommendations,
-        apiSourceInfo
+        apiSourceInfo: 'Luxury My Travel Security-Fortified AI Agent'
       }]);
-    }, 1500);
+
+    } catch (err) {
+      console.warn("AI Concierge API failed, using fallback mock response:", err);
+      
+      // Simulate concierge thinking & querying APIs (Fallback)
+      setTimeout(() => {
+        let replyText = '';
+        let recommendations: LuxuryItem[] = [];
+        let apiSourceInfo = '';
+
+        const lctype = type || text.toLowerCase();
+
+        if (lctype.includes('como') || lctype.includes('lake_como') || lctype.includes('italy')) {
+          apiSourceInfo = 'Luxury Lodging & Dining Registries';
+          replyText = "An outstanding choice. Lake Como represents the pinnacle of Italian romance. I have consulted our dining curations database and Luxury Yacht Charter registries. Here are my elite recommendations for your getaway: Villa d'Este, the iconic Benetti Oasis superyacht, and a dining reservation at Osteria Francescana in nearby Modena.";
+          
+          const villa = stayList.find(s => s.id === 's-3');
+          const yacht = travelList.find(t => t.id === 't-3');
+          const dining = foodList.find(f => f.id === 'f-3');
+          
+          if (yacht) recommendations.push({ type: 'travel', data: yacht });
+          if (villa) recommendations.push({ type: 'stay', data: villa });
+          if (dining) recommendations.push({ type: 'food', data: dining });
+
+          triggerApiLog('LodgingService', 'GET /v2/shopping/charters/yachts', { location: "Lake Como" }, { data: [yacht] });
+          triggerApiLog('ConciergeRegistry', 'GET /v1/location/s-3/details', { locationId: "s-3" }, { data: villa });
+
+        } else if (lctype.includes('maldives') || lctype.includes('jet') || lctype.includes('flight')) {
+          apiSourceInfo = 'Aviation Charter & Luxury Stays systems';
+          replyText = "To ensure absolute privacy and luxury, I have arranged flight paths for a Gulfstream G650ER private charter, combined with an overwater retreat at Soneva Jani, Maldives retrieved from our luxury accommodations registry.";
+          
+          const jet = travelList.find(t => t.id === 't-1');
+          const soneva = stayList.find(s => s.id === 's-1');
+          const islandEx = experienceList.find(e => e.id === 'e-3');
+
+          if (jet) recommendations.push({ type: 'travel', data: jet });
+          if (soneva) recommendations.push({ type: 'stay', data: soneva });
+          if (islandEx) recommendations.push({ type: 'experience', data: islandEx });
+
+          triggerApiLog('AirService', 'POST /v1/offer_requests', { origin: "LHR", destination: "MLE" }, { data: { offers: [jet] } });
+          triggerApiLog('LodgingService', 'GET /v3/shopping/hotel-offers', { hotelId: "s-1" }, { data: soneva });
+
+        } else if (lctype.includes('michelin') || lctype.includes('food') || lctype.includes('dining')) {
+          apiSourceInfo = 'Gourmet Culinary Registries';
+          replyText = "For the refined palate, I have queried our elite culinary database. I recommend reserving a table at Mirazur in Menton, France (3 Michelin Stars) and dropping by the famous Connaught Bar in Mayfair, London. I can also schedule an exclusive private wine-tasting excursion.";
+          
+          const mirazur = foodList.find(f => f.id === 'f-1');
+          const connaught = foodList.find(f => f.id === 'f-2');
+          const wineEx = experienceList.find(e => e.id === 'e-1');
+
+          if (mirazur) recommendations.push({ type: 'food', data: mirazur });
+          if (connaught) recommendations.push({ type: 'food', data: connaught });
+          if (wineEx) recommendations.push({ type: 'experience', data: wineEx });
+
+          triggerApiLog('ConciergeRegistry', 'GET /v1/location/f-1/details', { locationId: "f-1" }, { data: mirazur });
+          triggerApiLog('ConciergeRegistry', 'GET /v1/location/f-2/details', { locationId: "f-2" }, { data: connaught });
+
+        } else {
+          apiSourceInfo = 'Bespoke Curations Registry';
+          replyText = `I have received your request for "${text}". I have queried our linked travel and dining systems. Let me recommend these outstanding location-dependent bespoke selections to construct your ultimate itinerary:`;
+          
+          const exp = experienceList[1] || experienceList[0];
+          const stay = stayList[1] || stayList[0];
+          
+          if (stay) recommendations.push({ type: 'stay', data: stay });
+          if (exp) recommendations.push({ type: 'experience', data: exp });
+
+          triggerApiLog('LodgingService', 'GET /v3/shopping/hotel-offers', { search: text }, { data: [stay] });
+        }
+
+        setIsTyping(false);
+        setMessages(prev => [...prev, {
+          id: Math.random().toString(),
+          sender: 'concierge',
+          text: replyText,
+          timestamp: new Date(),
+          recommendations,
+          apiSourceInfo
+        }]);
+      }, 1500);
+    }
   };
 
   return (
