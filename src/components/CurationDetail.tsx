@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import type { LuxuryItem } from '../data/mockData';
-import { ArrowLeft, Star, ShieldCheck, Layers, Plus, MapPin } from 'lucide-react';
+import { ArrowLeft, Star, ShieldCheck, Layers, Plus, MapPin, Check } from 'lucide-react';
 
 interface CurationDetailProps {
   item: LuxuryItem;
@@ -10,6 +10,7 @@ interface CurationDetailProps {
   formatPrice: (amountUSD: number) => string;
   allRecommendations: LuxuryItem[];
   onSelectRelated: (item: LuxuryItem) => void;
+  itinerary: LuxuryItem[];
 }
 
 export const CurationDetail: React.FC<CurationDetailProps> = ({
@@ -20,6 +21,7 @@ export const CurationDetail: React.FC<CurationDetailProps> = ({
   formatPrice,
   allRecommendations,
   onSelectRelated,
+  itinerary,
 }) => {
   const { name, description, image, rating, location, highlights, apiSource, category } = item.data;
   
@@ -564,26 +566,36 @@ export const CurationDetail: React.FC<CurationDetailProps> = ({
 
               {/* Action Buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <button
-                  onClick={() => {
-                    onAddToItinerary(item);
-                    handleInspectAPI(); // also log api request/response payload
-                  }}
-                  className="btn-primary"
-                  style={{
-                    width: '100%',
-                    padding: '1rem 2rem',
-                    fontSize: '0.95rem',
-                    borderRadius: 'var(--radius-md)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem'
-                  }}
-                >
-                  <Plus size={18} />
-                  <span>Reserve Curation</span>
-                </button>
+                {(() => {
+                  const isAdded = itinerary.some(it => it.data.id === item.data.id);
+                  return (
+                    <button
+                      onClick={() => {
+                        if (!isAdded) {
+                          onAddToItinerary(item);
+                          handleInspectAPI(); // also log api request/response payload
+                        }
+                      }}
+                      className={isAdded ? "btn-secondary" : "btn-primary"}
+                      disabled={isAdded}
+                      style={{
+                        width: '100%',
+                        padding: '1rem 2rem',
+                        fontSize: '0.95rem',
+                        borderRadius: 'var(--radius-md)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        opacity: isAdded ? 0.7 : 1,
+                        cursor: isAdded ? 'default' : 'pointer'
+                      }}
+                    >
+                      {isAdded ? <Check size={18} /> : <Plus size={18} />}
+                      <span>{isAdded ? 'Curation Reserved' : 'Reserve Curation'}</span>
+                    </button>
+                  );
+                })()}
 
                 <button
                   onClick={handleInspectAPI}

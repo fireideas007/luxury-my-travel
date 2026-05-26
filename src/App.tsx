@@ -409,6 +409,20 @@ function App() {
   const [selectedCuration, setSelectedCuration] = useState<LuxuryItem | null>(null);
   const [itinerary, setItinerary] = useState<LuxuryItem[]>([]);
   const [autoCheckout, setAutoCheckout] = useState<boolean>(false);
+  const [toast, setToast] = useState<{ message: string; show: boolean }>({ message: '', show: false });
+
+  const showToast = (message: string) => {
+    setToast({ message, show: true });
+  };
+
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast(prev => ({ ...prev, show: false }));
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
   
   // Membership States
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
@@ -788,6 +802,7 @@ function App() {
     const exists = itinerary.some(it => it.data.id === item.data.id);
     if (!exists) {
       setItinerary(prev => [...prev, item]);
+      showToast(`✨ ${item.data.name} has been added to your itinerary.`);
       
       // Simulate API verification
       triggerApiLog(
@@ -800,6 +815,8 @@ function App() {
         { validation_check: "pre-reserve", itemId: item.data.id },
         { status: "validated", price_locked: true, currency: "USD", amount: (item.data as any).price || "N/A" }
       );
+    } else {
+      showToast(`ℹ️ ${item.data.name} is already in your itinerary.`);
     }
 
     // Auto navigate to itinerary and trigger checkout for flights
@@ -848,6 +865,7 @@ function App() {
                 formatPrice={formatPrice}
                 allRecommendations={allLuxuryItems}
                 onSelectRelated={setSelectedCuration}
+                itinerary={itinerary}
               />
             ) : (
               <>
@@ -899,11 +917,12 @@ function App() {
                   </div>
 
                   <ItemGrid 
-                    items={filteredItems} 
+                    items={filteredItems}
                     onAddToItinerary={handleAddToItinerary}
                     onSelectItem={setSelectedCuration}
                     triggerApiLog={triggerApiLog}
                     formatPrice={formatPrice}
+                    itinerary={itinerary}
                   />
                 </div>
                 
@@ -953,7 +972,7 @@ function App() {
 
         {activeTab === 'concierge' && (
           <div className="luxury-container" style={{ marginTop: '3rem' }}>
-            <Concierge onAddToItinerary={handleAddToItinerary} triggerApiLog={triggerApiLog} />
+            <Concierge onAddToItinerary={handleAddToItinerary} triggerApiLog={triggerApiLog} itinerary={itinerary} />
           </div>
         )}
 
@@ -1220,6 +1239,34 @@ function App() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Premium Glassmorphic Toast Notification */}
+      {toast.show && (
+        <div 
+          className="animate-slide-up"
+          style={{
+            position: 'fixed',
+            bottom: '2.5rem',
+            right: '2.5rem',
+            zIndex: 1000,
+            background: 'rgba(9, 9, 12, 0.85)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(223, 195, 132, 0.3)',
+            borderRadius: 'var(--radius-md)',
+            padding: '1rem 1.5rem',
+            color: 'var(--color-text-primary)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(223, 195, 132, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            maxWidth: '350px',
+            fontFamily: 'var(--font-sans)',
+            fontSize: '0.9rem'
+          }}
+        >
+          <div>{toast.message}</div>
         </div>
       )}
     </div>

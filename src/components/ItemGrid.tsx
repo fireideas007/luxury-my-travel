@@ -1,6 +1,6 @@
 import React from 'react';
 import type { LuxuryItem } from '../data/mockData';
-import { Star, ShieldCheck, Plus, Sparkles, HelpCircle, Layers } from 'lucide-react';
+import { Star, ShieldCheck, Plus, Sparkles, HelpCircle, Layers, Check } from 'lucide-react';
 
 interface ItemGridProps {
   items: LuxuryItem[];
@@ -8,9 +8,10 @@ interface ItemGridProps {
   onSelectItem: (item: LuxuryItem) => void;
   triggerApiLog: (api: 'AirService' | 'LodgingService' | 'ConciergeRegistry', endpoint: string, request: any, response: any) => void;
   formatPrice: (amountUSD: number) => string;
+  itinerary: LuxuryItem[];
 }
 
-export const ItemGrid: React.FC<ItemGridProps> = ({ items, onAddToItinerary, onSelectItem, triggerApiLog, formatPrice }) => {
+export const ItemGrid: React.FC<ItemGridProps> = ({ items, onAddToItinerary, onSelectItem, triggerApiLog, formatPrice, itinerary }) => {
   const safeFormatPrice = typeof formatPrice === 'function' ? formatPrice : (amount: number) => `$${amount.toLocaleString()}`;
   
   const handleInspectAPI = (item: LuxuryItem) => {
@@ -446,22 +447,35 @@ export const ItemGrid: React.FC<ItemGridProps> = ({ items, onAddToItinerary, onS
                     >
                       <Layers size={16} />
                     </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAddToItinerary(item);
-                        handleInspectAPI(item); // also trigger API logs on adding!
-                      }}
-                      className="btn-primary"
-                      style={{
-                        padding: '0.5rem 1rem',
-                        fontSize: '0.8rem',
-                        borderRadius: 'var(--radius-md)'
-                      }}
-                    >
-                      <Plus size={14} />
-                      <span>Reserve</span>
-                    </button>
+                    {(() => {
+                      const isAdded = itinerary.some(it => it.data.id === item.data.id);
+                      return (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!isAdded) {
+                              onAddToItinerary(item);
+                              handleInspectAPI(item); // also trigger API logs on adding!
+                            }
+                          }}
+                          className={isAdded ? "btn-secondary" : "btn-primary"}
+                          disabled={isAdded}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            fontSize: '0.8rem',
+                            borderRadius: 'var(--radius-md)',
+                            opacity: isAdded ? 0.7 : 1,
+                            cursor: isAdded ? 'default' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.25rem'
+                          }}
+                        >
+                          {isAdded ? <Check size={14} /> : <Plus size={14} />}
+                          <span>{isAdded ? 'Reserved' : 'Reserve'}</span>
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
 

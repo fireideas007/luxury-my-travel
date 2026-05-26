@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles, User, Plus, Layers } from 'lucide-react';
+import { Send, Sparkles, User, Plus, Layers, Check } from 'lucide-react';
 import type { LuxuryItem } from '../data/mockData';
 import { travelList, stayList, foodList, experienceList } from '../data/mockData';
 
@@ -15,9 +15,10 @@ interface Message {
 interface ConciergeProps {
   onAddToItinerary: (item: LuxuryItem) => void;
   triggerApiLog: (api: 'AirService' | 'LodgingService' | 'ConciergeRegistry', endpoint: string, request: any, response: any) => void;
+  itinerary: LuxuryItem[];
 }
 
-export const Concierge: React.FC<ConciergeProps> = ({ onAddToItinerary, triggerApiLog }) => {
+export const Concierge: React.FC<ConciergeProps> = ({ onAddToItinerary, triggerApiLog, itinerary }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -350,14 +351,29 @@ export const Concierge: React.FC<ConciergeProps> = ({ onAddToItinerary, triggerA
                                 </span>
                               </div>
                             </div>
-                            <button
-                              onClick={() => onAddToItinerary(rec)}
-                              className="btn-primary"
-                              style={{ padding: '0.4rem 0.75rem', fontSize: '0.7rem', borderRadius: 'var(--radius-sm)' }}
-                            >
-                              <Plus size={10} />
-                              <span>Add</span>
-                            </button>
+                            {(() => {
+                              const isAdded = itinerary.some(it => it.data.id === rec.data.id);
+                              return (
+                                <button
+                                  onClick={() => !isAdded && onAddToItinerary(rec)}
+                                  className={isAdded ? "btn-secondary" : "btn-primary"}
+                                  disabled={isAdded}
+                                  style={{ 
+                                    padding: '0.4rem 0.75rem', 
+                                    fontSize: '0.7rem', 
+                                    borderRadius: 'var(--radius-sm)',
+                                    opacity: isAdded ? 0.7 : 1,
+                                    cursor: isAdded ? 'default' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem'
+                                  }}
+                                >
+                                  {isAdded ? <Check size={10} /> : <Plus size={10} />}
+                                  <span>{isAdded ? 'Added' : 'Add'}</span>
+                                </button>
+                              );
+                            })()}
                           </div>
                         ))}
                       </div>
