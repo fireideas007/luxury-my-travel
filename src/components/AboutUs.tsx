@@ -138,7 +138,7 @@ export const AboutUs: React.FC<AboutUsProps> = ({ onBackToCatalog }) => {
               Highest Level Cyber Protection
             </p>
             <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', lineHeight: '1.5', margin: 0 }}>
-              For application security, we deploy the highest level of security AI agents which perform continuous, realtime security scanning and automated patch application. Additionally, a manual penetration test is carried out twice a month by an elite Bugcrowd security researcher to guarantee absolute immunity from threats.
+              For application security, we deploy the highest level of security AI agents which perform continuous, realtime security scanning and automated patch application. Additionally, a manual penetration test is carried out twice a month by an experienced <a href="https://bugcrowd.com/adityajanu" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', textDecoration: 'underline' }}>Bugcrowd Security Researcher</a> to guarantee absolute immunity from threats.
             </p>
           </div>
         </div>
