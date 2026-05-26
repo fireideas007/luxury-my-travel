@@ -9,7 +9,7 @@ import { BlogSystem } from './components/BlogSystem';
 import { AboutUs } from './components/AboutUs';
 import type { LuxuryItem } from './data/mockData';
 import { allLuxuryItems } from './data/mockData';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, ArrowRight } from 'lucide-react';
 import { TravelService } from './services/travelService';
 import { MembershipModal } from './components/MembershipModal';
 import type { BookedCuration, UserAccount, PaymentTransaction } from './data/mockData';
@@ -934,6 +934,17 @@ function App() {
                   <p style={{ color: 'var(--color-text-secondary)', maxWidth: '600px', margin: '0 auto', fontSize: '0.95rem' }}>
                     Luxury My Travel operates under the highest level of banking-grade AI security protocols, featuring automated realtime vulnerability scanning, instant threat patching, and continuous encryption to guarantee absolute privacy and security.
                   </p>
+                  <button 
+                    onClick={() => {
+                      setActiveTab('concierge');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="btn-primary"
+                    style={{ fontSize: '0.85rem', padding: '0.8rem 2rem', gap: '0.5rem', marginTop: '2rem' }}
+                  >
+                    <span>Consult Luxury My Travel Concierge</span>
+                    <ArrowRight size={14} />
+                  </button>
                 </section>
               </>
             )}
