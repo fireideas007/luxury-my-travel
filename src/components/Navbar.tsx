@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { Menu, X, Landmark, FileCode, User, UserCheck } from 'lucide-react';
+import { Menu, X, Landmark, User, UserCheck } from 'lucide-react';
 import type { UserAccount } from '../data/mockData';
 
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   itineraryCount: number;
-  isSandboxOpen: boolean;
-  setIsSandboxOpen: (open: boolean) => void;
   currentUser: UserAccount | null;
   onOpenAuth: () => void;
   currentCurrency: string;
@@ -18,8 +16,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
   itineraryCount,
-  isSandboxOpen,
-  setIsSandboxOpen,
   currentUser,
   onOpenAuth,
   currentCurrency,
@@ -169,24 +165,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="desktop-only">Membership Sign In</span>
             </button>
           )}
-
-          <button
-            onClick={() => setIsSandboxOpen(!isSandboxOpen)}
-            className="btn-secondary"
-            style={{ 
-              padding: '0.5rem 1rem', 
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              borderColor: isSandboxOpen ? 'var(--color-gold)' : 'var(--color-border)',
-              color: isSandboxOpen ? 'var(--color-gold)' : 'var(--color-text-primary)'
-            }}
-          >
-            <FileCode size={16} />
-            <span className="desktop-only">API Sandbox</span>
-            {isSandboxOpen && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-gold)' }} />}
-          </button>
 
           {/* Mobile menu toggle */}
           <button

@@ -1,7 +1,7 @@
 import type { TravelItem, LuxuryItem } from '../data/mockData';
 
-// Duffel Offer Request interface
-export interface DuffelSearchRequest {
+// GDS Travel Search Request interface
+export interface TravelSearchRequest {
   origin: string;
   destination: string;
   departureDate: string;
@@ -9,8 +9,8 @@ export interface DuffelSearchRequest {
   passengers?: Array<{ type: 'adult' | 'child' | 'infant_without_seat' }>;
 }
 
-export class DuffelService {
-  private static PROXY_BASE = '/api/duffel';
+export class TravelService {
+  private static PROXY_BASE = '/api/travel';
 
   /**
    * Helper to format ISO 8601 Durations (like PT13H45M) to readable text
@@ -25,16 +25,16 @@ export class DuffelService {
   }
 
   /**
-   * Creates a flight search offer request on Duffel and retrieves real offers
+   * Creates a flight search offer request on the GDS and retrieves real offers
    */
-  static async searchFlights(params: DuffelSearchRequest): Promise<{ 
+  static async searchFlights(params: TravelSearchRequest): Promise<{ 
     offers: TravelItem[];
     rawRequest: any;
     rawResponse: any;
   }> {
     const defaultDate = params.departureDate || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
-    // Duffel standard request format
+    // GDS standard request format
     const requestBody = {
       data: {
         slices: [
@@ -73,7 +73,7 @@ export class DuffelService {
 
     const resJson = await response.json();
 
-    // Map Duffel offers to TravelItems
+    // Map GDS offers to TravelItems
     const rawOffers = resJson.data?.offers || [];
     const mappedOffers: TravelItem[] = rawOffers.map((offer: any) => {
       const owner = offer.owner || { name: 'Exclusive Airline' };
@@ -134,7 +134,7 @@ export class DuffelService {
   }
 
   /**
-   * Search stays on Duffel Stays API
+   * Search stays on GDS Lodging API
    */
   static async searchStays(params: {
     lat: number;
@@ -214,7 +214,7 @@ export class DuffelService {
   }
 
   /**
-   * Search cars on Duffel Cars API
+   * Search cars on GDS Fleet API
    */
   static async searchCars(params: {
     lat: number;
@@ -289,7 +289,7 @@ export class DuffelService {
   }
 
   /**
-   * Book a flight by creating an order on the Duffel GDS API
+   * Book a flight by creating an order on the GDS API
    */
   static async bookFlight(params: {
     offerId: string;
@@ -363,4 +363,3 @@ export class DuffelService {
     };
   }
 }
-

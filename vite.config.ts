@@ -16,11 +16,11 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       {
-        name: 'duffel-api-middleware',
+        name: 'travel-api-middleware',
         configureServer(server) {
           server.middlewares.use(async (req, res, next) => {
             // Check if it is a request to search flights
-            if (req.url && req.url.startsWith('/api/duffel/air/offer_requests') && req.method === 'POST') {
+            if (req.url && req.url.startsWith('/api/travel/air/offer_requests') && req.method === 'POST') {
               let body = '';
               req.on('data', chunk => {
                 body += chunk;
@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
                   if (!token) {
                     res.statusCode = 401;
                     res.setHeader('Content-Type', 'application/json');
-                    res.end(JSON.stringify({ error: "Missing VITE_DUFFEL_API_KEY in environment variables." }));
+                    res.end(JSON.stringify({ error: "Missing GDS API token in environment variables." }));
                     return;
                   }
 
@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => {
                   const passengers = parsed.data?.passengers || [];
                   const cabin_class = parsed.data?.cabin_class || 'first';
 
-                  // Execute offer request via Duffel SDK
+                  // Execute offer request via GDS SDK
                   const offerRequest = await duffel.offerRequests.create({
                     slices: slices.map((s: any) => ({
                       origin: s.origin,
@@ -57,19 +57,19 @@ export default defineConfig(({ mode }) => {
 
                   res.statusCode = 200;
                   res.setHeader('Content-Type', 'application/json');
-                  // Duffel SDK returns offer requests structure under .data, we wrap it to match client service expectations
+                  // GDS returns offer requests structure under .data, we wrap it to match client service expectations
                   res.end(JSON.stringify({ data: offerRequest.data }));
                 } catch (err: any) {
-                  console.error("Duffel middleware error:", err);
+                  console.error("GDS middleware error:", err);
                   res.statusCode = 500;
                   res.setHeader('Content-Type', 'application/json');
                   res.end(JSON.stringify({ 
-                    error: err.message || "Failed to execute Duffel SDK offer request",
+                    error: err.message || "Failed to execute live offer request",
                     details: err.errors || err.meta || err
                   }));
                 }
               });
-            } else if (req.url && req.url.startsWith('/api/duffel/stays/search') && req.method === 'POST') {
+            } else if (req.url && req.url.startsWith('/api/travel/stays/search') && req.method === 'POST') {
               let body = '';
               req.on('data', chunk => {
                 body += chunk;
@@ -81,7 +81,7 @@ export default defineConfig(({ mode }) => {
                   if (!token) {
                     res.statusCode = 401;
                     res.setHeader('Content-Type', 'application/json');
-                    res.end(JSON.stringify({ error: "Missing VITE_DUFFEL_API_KEY in environment variables." }));
+                    res.end(JSON.stringify({ error: "Missing GDS API token in environment variables." }));
                     return;
                   }
 
@@ -109,14 +109,14 @@ export default defineConfig(({ mode }) => {
                   res.setHeader('Content-Type', 'application/json');
                   res.end(JSON.stringify({ data: staysSearch.data }));
                 } catch (err: any) {
-                  console.error("Duffel Stays middleware error. Status:", err.status, "Details:", err.errors || err.meta || err);
+                  console.error("GDS Stays error. Status:", err.status, "Details:", err.errors || err.meta || err);
                   res.statusCode = err.status || 500;
                   res.setHeader('Content-Type', 'application/json');
-                  let errorMessage = err.message || "Failed to execute Duffel Stays search";
+                  let errorMessage = err.message || "Failed to execute stays GDS search";
                   let errorDetails = err.errors || err.meta || err;
                   if (err.status === 403) {
-                    errorMessage = "Access Denied (403): Duffel Stays GDS is not enabled for this account/token. Contact Duffel sales to request access.";
-                    errorDetails = { error: "FeatureNotEnabled", message: "Stays GDS features require account activation on your Duffel token." };
+                    errorMessage = "Access Denied (403): Live Lodging GDS is not enabled for this account/token. Contact sales to request access.";
+                    errorDetails = { error: "FeatureNotEnabled", message: "Stays GDS features require account activation on your GDS token." };
                   }
                   res.end(JSON.stringify({ 
                     error: errorMessage,
@@ -124,7 +124,7 @@ export default defineConfig(({ mode }) => {
                   }));
                 }
               });
-            } else if (req.url && req.url.startsWith('/api/duffel/cars/search') && req.method === 'POST') {
+            } else if (req.url && req.url.startsWith('/api/travel/cars/search') && req.method === 'POST') {
               let body = '';
               req.on('data', chunk => {
                 body += chunk;
@@ -136,7 +136,7 @@ export default defineConfig(({ mode }) => {
                   if (!token) {
                     res.statusCode = 401;
                     res.setHeader('Content-Type', 'application/json');
-                    res.end(JSON.stringify({ error: "Missing VITE_DUFFEL_API_KEY in environment variables." }));
+                    res.end(JSON.stringify({ error: "Missing GDS API token in environment variables." }));
                     return;
                   }
 
@@ -171,14 +171,14 @@ export default defineConfig(({ mode }) => {
                   res.setHeader('Content-Type', 'application/json');
                   res.end(JSON.stringify({ data: carsSearch.data }));
                 } catch (err: any) {
-                  console.error("Duffel Cars middleware error. Status:", err.status, "Details:", err.errors || err.meta || err);
+                  console.error("GDS Cars error. Status:", err.status, "Details:", err.errors || err.meta || err);
                   res.statusCode = err.status || 500;
                   res.setHeader('Content-Type', 'application/json');
-                  let errorMessage = err.message || "Failed to execute Duffel Cars search";
+                  let errorMessage = err.message || "Failed to execute GDS cars search";
                   let errorDetails = err.errors || err.meta || err;
                   if (err.status === 403) {
-                    errorMessage = "Access Denied (403): Duffel Cars GDS is not enabled for this account/token. Contact Duffel sales to request access.";
-                    errorDetails = { error: "FeatureNotEnabled", message: "Cars GDS features require account activation on your Duffel token." };
+                    errorMessage = "Access Denied (403): Live Fleet GDS is not enabled for this account/token. Contact support to request access.";
+                    errorDetails = { error: "FeatureNotEnabled", message: "Cars GDS features require account activation on your GDS token." };
                   }
                   res.end(JSON.stringify({ 
                     error: errorMessage,
@@ -186,13 +186,13 @@ export default defineConfig(({ mode }) => {
                   }));
                 }
               });
-            } else if (req.url && req.url.startsWith('/api/duffel/place_suggestions') && req.method === 'GET') {
+            } else if (req.url && req.url.startsWith('/api/travel/place_suggestions') && req.method === 'GET') {
               try {
                 const token = env.VITE_DUFFEL_API_KEY;
                 if (!token) {
                   res.statusCode = 401;
                   res.setHeader('Content-Type', 'application/json');
-                  res.end(JSON.stringify({ error: "Missing VITE_DUFFEL_API_KEY in environment variables." }));
+                  res.end(JSON.stringify({ error: "Missing GDS API token in environment variables." }));
                   return;
                 }
 
@@ -213,7 +213,7 @@ export default defineConfig(({ mode }) => {
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ data: suggestions.data }));
               } catch (err: any) {
-                console.error("Duffel suggestions error:", err);
+                console.error("GDS suggestions error:", err);
                 res.statusCode = 500;
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ 
@@ -221,7 +221,7 @@ export default defineConfig(({ mode }) => {
                   details: err.errors || err.meta || err
                 }));
               }
-            } else if (req.url && req.url.startsWith('/api/duffel/air/orders') && req.method === 'POST') {
+            } else if (req.url && req.url.startsWith('/api/travel/air/orders') && req.method === 'POST') {
               let body = '';
               req.on('data', chunk => {
                 body += chunk;
@@ -233,7 +233,7 @@ export default defineConfig(({ mode }) => {
                   if (!token) {
                     res.statusCode = 401;
                     res.setHeader('Content-Type', 'application/json');
-                    res.end(JSON.stringify({ error: "Missing VITE_DUFFEL_API_KEY in environment variables." }));
+                    res.end(JSON.stringify({ error: "Missing GDS API token in environment variables." }));
                     return;
                   }
 
@@ -244,7 +244,7 @@ export default defineConfig(({ mode }) => {
                   const passengers = parsed.passengers || [];
                   const payments = parsed.payments || [];
 
-                  // Execute order creation via Duffel SDK
+                  // Execute order creation via GDS SDK
                   const order = await duffel.orders.create({
                     type: 'instant',
                     selected_offers,
@@ -256,11 +256,11 @@ export default defineConfig(({ mode }) => {
                   res.setHeader('Content-Type', 'application/json');
                   res.end(JSON.stringify({ data: order.data }));
                 } catch (err: any) {
-                  console.error("Duffel Orders middleware error:", err);
+                  console.error("GDS Orders error:", err);
                   res.statusCode = err.status || 500;
                   res.setHeader('Content-Type', 'application/json');
                   res.end(JSON.stringify({ 
-                    error: err.message || "Failed to execute Duffel SDK order creation",
+                    error: err.message || "Failed to execute live order creation",
                     details: err.errors || err.meta || err
                   }));
                 }

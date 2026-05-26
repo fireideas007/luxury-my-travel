@@ -4,13 +4,11 @@ import { Hero } from './components/Hero';
 import { ItemGrid } from './components/ItemGrid';
 import { Itinerary } from './components/Itinerary';
 import { Concierge } from './components/Concierge';
-import { Sandbox } from './components/Sandbox';
-import type { ApiLog } from './components/Sandbox';
 import { BlogSystem } from './components/BlogSystem';
 import type { LuxuryItem } from './data/mockData';
 import { allLuxuryItems } from './data/mockData';
 import { ShieldCheck, ArrowRight } from 'lucide-react';
-import { DuffelService } from './services/duffelService';
+import { TravelService } from './services/travelService';
 import { MembershipModal } from './components/MembershipModal';
 import type { BookedCuration, UserAccount, PaymentTransaction } from './data/mockData';
 import { Plane, X } from 'lucide-react';
@@ -407,8 +405,6 @@ const generateDynamicFlights = (origin: string, destination: string): LuxuryItem
 function App() {
   const [activeTab, setActiveTab] = useState<string>('explore');
   const [itinerary, setItinerary] = useState<LuxuryItem[]>([]);
-  const [logs, setLogs] = useState<ApiLog[]>([]);
-  const [isSandboxOpen, setIsSandboxOpen] = useState<boolean>(false);
   const [autoCheckout, setAutoCheckout] = useState<boolean>(false);
   
   // Membership States
@@ -548,31 +544,21 @@ function App() {
   const [liveTravelItems, setLiveTravelItems] = useState<LuxuryItem[]>([]);
   const [liveStayItems, setLiveStayItems] = useState<LuxuryItem[]>([]);
 
-  // Trigger custom Sandbox log
+  // Trigger custom Sandbox log (no-op now that Sandbox UI is removed)
   const triggerApiLog = (
-    api: 'AirService' | 'LodgingService' | 'ConciergeRegistry',
-    endpoint: string,
-    request: any,
-    response: any
+    _api: 'AirService' | 'LodgingService' | 'ConciergeRegistry',
+    _endpoint: string,
+    _request: any,
+    _response: any
   ) => {
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const newLog: ApiLog = {
-      id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      timestamp,
-      api,
-      endpoint,
-      request,
-      response
-    };
-    setLogs((prev) => [newLog, ...prev]);
-    setIsSandboxOpen(true); // Automatically slide open sandbox to show the transaction log
+    // Disabled sandbox logging
   };
 
   // Filter items logic
   useEffect(() => {
     let result = allLuxuryItems;
 
-    // Replace static flights and cars with live Duffel offers if retrieved
+    // Replace static flights and cars with live GDS offers if retrieved
     if (liveTravelItems.length > 0) {
       const nonFlightOrTaxiItems = result.filter(item => !(item.type === 'travel' && (item.data.category === 'flight' || item.data.category === 'taxi')));
       result = [...liveTravelItems, ...nonFlightOrTaxiItems];
@@ -683,32 +669,32 @@ function App() {
         }
 
         // Fetch flight offers
-        const duffelRes = await DuffelService.searchFlights({
+        const travelRes = await TravelService.searchFlights({
           origin: finalOrigin,
           destination: finalDestination,
           departureDate: departureDate || '2026-06-15'
         });
 
-        const mappedLuxuryFlights: LuxuryItem[] = duffelRes.offers.map(item => ({ type: 'travel', data: item }));
+        const mappedLuxuryFlights: LuxuryItem[] = travelRes.offers.map(item => ({ type: 'travel', data: item }));
         
-        // Log flights search in Sandbox
-        triggerApiLog('AirService', 'POST /air/offer_requests', duffelRes.rawRequest, duffelRes.rawResponse);
+        // Log flights search
+        triggerApiLog('AirService', 'POST /air/offer_requests', travelRes.rawRequest, travelRes.rawResponse);
 
         // Fetch car offers at the destination location
         let mappedLuxuryCars: LuxuryItem[] = [];
         try {
           const coords = lat && lng ? { lat, lng } : getCoords(location);
-          const duffelCarsRes = await DuffelService.searchCars({
+          const travelCarsRes = await TravelService.searchCars({
             lat: coords.lat,
             lng: coords.lng,
             pickupDate: departureDate || '2026-06-15',
             dropoffDate: '2026-06-22'
           });
-          mappedLuxuryCars = duffelCarsRes.cars;
-          // Log cars search in Sandbox
-          triggerApiLog('AirService', 'POST /cars/search', duffelCarsRes.rawRequest, duffelCarsRes.rawResponse);
+          mappedLuxuryCars = travelCarsRes.cars;
+          // Log cars search
+          triggerApiLog('AirService', 'POST /cars/search', travelCarsRes.rawRequest, travelCarsRes.rawResponse);
         } catch (carErr: any) {
-          console.warn("Duffel Cars GDS search failed, generating localized mock vehicles:", carErr);
+          console.warn("Cars search failed, generating localized mock vehicles:", carErr);
           mappedLuxuryCars = generateDynamicCars(location);
         }
 
@@ -716,7 +702,7 @@ function App() {
         setLiveStayItems([]);
 
       } catch (err: any) {
-        console.error("Duffel flight search failed, falling back to mock travel curations:", err);
+        console.error("Flight search failed, falling back to mock travel curations:", err);
         const extractIata = (str: string) => {
           const match = str.match(/\(([A-Z]{3})\)/);
           return match ? match[1] : str.toUpperCase().trim();
@@ -747,19 +733,19 @@ function App() {
     } else if (category === 'stay' && location.trim()) {
       try {
         const coords = lat && lng ? { lat, lng } : getCoords(location);
-        const duffelStaysRes = await DuffelService.searchStays({
+        const travelStaysRes = await TravelService.searchStays({
           lat: coords.lat,
           lng: coords.lng,
           checkInDate: '2026-06-15',
           checkOutDate: '2026-06-22'
         });
-        setLiveStayItems(duffelStaysRes.stays);
+        setLiveStayItems(travelStaysRes.stays);
         setLiveTravelItems([]);
         
-        // Log stays search in Sandbox
-        triggerApiLog('LodgingService', 'POST /stays/search', duffelStaysRes.rawRequest, duffelStaysRes.rawResponse);
+        // Log stays search
+        triggerApiLog('LodgingService', 'POST /stays/search', travelStaysRes.rawRequest, travelStaysRes.rawResponse);
       } catch (err: any) {
-        console.error("Duffel stays search failed, falling back to mock stay curations:", err);
+        console.error("Stays search failed, falling back to mock stay curations:", err);
         let errorPayload = { error: "Failed to search stays on GDS" };
         try {
           if (err.message) {
@@ -827,10 +813,6 @@ function App() {
     setItinerary([]);
   };
 
-  const handleClearLogs = () => {
-    setLogs([]);
-  };
-
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Sticky Header Navbar */}
@@ -838,8 +820,6 @@ function App() {
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         itineraryCount={itinerary.length}
-        isSandboxOpen={isSandboxOpen}
-        setIsSandboxOpen={setIsSandboxOpen}
         currentUser={currentUser}
         onOpenAuth={() => setIsAuthOpen(true)}
         currentCurrency={currentCurrency}
@@ -974,15 +954,6 @@ function App() {
           </div>
         )}
       </main>
-
-      {/* Slide-out API Sandbox Inspector panel */}
-      <Sandbox 
-        logs={logs} 
-        onClearLogs={handleClearLogs} 
-        isOpen={isSandboxOpen} 
-        onClose={() => setIsSandboxOpen(false)}
-      />
-
       {/* Footer */}
       <footer style={{
         background: '#040406',

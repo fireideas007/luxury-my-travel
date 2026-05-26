@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { LuxuryItem, UserAccount, BookedCuration, PaymentTransaction } from '../data/mockData';
 import { Trash2, MapPin, Sparkles, AlertCircle, CheckCircle, Plane, Ticket, X, Info, ChevronRight, User } from 'lucide-react';
-import { DuffelService } from '../services/duffelService';
+import { TravelService } from '../services/travelService';
 
 const loadRazorpayScript = (): Promise<boolean> => {
   return new Promise((resolve) => {
@@ -354,17 +354,17 @@ export const Itinerary: React.FC<ItineraryProps> = ({
 
       try {
         if (isLiveOffer) {
-          // Execute real order creation via proxied Duffel API
-          const duffelRes = await DuffelService.bookFlight({
+          // Execute real order creation via proxied GDS API
+          const travelRes = await TravelService.bookFlight({
             offerId: fData.id,
             passengers: [passengerDetails],
             totalAmount: fData.price,
             currency: 'USD'
           });
 
-          triggerApiLog('AirService', 'POST /air/orders', duffelRes.rawRequest, duffelRes.rawResponse);
+          triggerApiLog('AirService', 'POST /air/orders', travelRes.rawRequest, travelRes.rawResponse);
 
-          const orderData = duffelRes.order;
+          const orderData = travelRes.order;
           const bookingRef = orderData.booking_reference || `LXT-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
 
           setBoardingPass({
@@ -507,9 +507,9 @@ export const Itinerary: React.FC<ItineraryProps> = ({
           }, 1500);
         }
       } catch (err: any) {
-        console.error("Duffel Flight Order failed, falling back to simulated flight booking:", err);
+        console.error("GDS Flight Order failed, falling back to simulated flight booking:", err);
         
-        let errorPayload = { error: "Network error during Duffel Flights Order creation" };
+        let errorPayload = { error: "Network error during Flights Order creation" };
         try {
           if (err.errorPayload) {
             errorPayload = err.errorPayload;
@@ -938,7 +938,7 @@ export const Itinerary: React.FC<ItineraryProps> = ({
               <CheckCircle size={32} style={{ color: 'var(--color-success)' }} />
               <h4 style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>Itinerary Confirmed!</h4>
               <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
-                Your private charter tickets, luxury stays, dining, and events are ticketed. Review the generated payloads in the API Sandbox.
+                Your private charter tickets, luxury stays, dining, and events are ticketed.
               </p>
             </div>
           )}

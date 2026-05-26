@@ -25,12 +25,12 @@ const getDuffelToken = () => process.env.VITE_DUFFEL_API_KEY || process.env.DUFF
 const getRazorpayKeyId = () => process.env.VITE_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
 const getRazorpayKeySecret = () => process.env.VITE_RAZORPAY_KEY_SECRET || process.env.RAZORPAY_KEY_SECRET;
 
-// 1. POST /api/duffel/air/offer_requests
-app.post('/api/duffel/air/offer_requests', async (req, res) => {
+// 1. POST /api/travel/air/offer_requests
+app.post('/api/travel/air/offer_requests', async (req, res) => {
   try {
     const token = getDuffelToken();
     if (!token) {
-      return res.status(401).json({ error: "Missing VITE_DUFFEL_API_KEY." });
+      return res.status(401).json({ error: "Missing live GDS API token." });
     }
     const duffel = new Duffel({ token });
     const { slices = [], passengers = [], cabin_class = 'first' } = req.body.data || req.body || {};
@@ -47,20 +47,20 @@ app.post('/api/duffel/air/offer_requests', async (req, res) => {
 
     res.status(200).json({ data: offerRequest.data });
   } catch (err) {
-    console.error("Duffel middleware error:", err);
+    console.error("GDS middleware error:", err);
     res.status(err.status || 500).json({ 
-      error: err.message || "Failed to execute Duffel SDK offer request",
+      error: err.message || "Failed to execute live offer request",
       details: err.errors || err.meta || err
     });
   }
 });
 
-// 2. POST /api/duffel/stays/search
-app.post('/api/duffel/stays/search', async (req, res) => {
+// 2. POST /api/travel/stays/search
+app.post('/api/travel/stays/search', async (req, res) => {
   try {
     const token = getDuffelToken();
     if (!token) {
-      return res.status(401).json({ error: "Missing VITE_DUFFEL_API_KEY." });
+      return res.status(401).json({ error: "Missing live GDS API token." });
     }
     const duffel = new Duffel({ token });
     const { lat, lng, radius = 15, checkInDate, checkOutDate } = req.body;
@@ -79,20 +79,20 @@ app.post('/api/duffel/stays/search', async (req, res) => {
     const staysSearch = await duffel.stays.search(searchParams);
     res.status(200).json({ data: staysSearch.data });
   } catch (err) {
-    console.error("Duffel Stays error:", err);
+    console.error("GDS Stays error:", err);
     res.status(err.status || 500).json({ 
-      error: err.message || "Failed to execute Duffel Stays search",
+      error: err.message || "Failed to execute stays search",
       details: err.errors || err.meta || err
     });
   }
 });
 
-// 3. POST /api/duffel/cars/search
-app.post('/api/duffel/cars/search', async (req, res) => {
+// 3. POST /api/travel/cars/search
+app.post('/api/travel/cars/search', async (req, res) => {
   try {
     const token = getDuffelToken();
     if (!token) {
-      return res.status(401).json({ error: "Missing VITE_DUFFEL_API_KEY." });
+      return res.status(401).json({ error: "Missing live GDS API token." });
     }
     const duffel = new Duffel({ token });
     const { lat, lng, pickupDate, dropoffDate } = req.body;
@@ -119,20 +119,20 @@ app.post('/api/duffel/cars/search', async (req, res) => {
     const carsSearch = await duffel.cars.search(searchParams);
     res.status(200).json({ data: carsSearch.data });
   } catch (err) {
-    console.error("Duffel Cars error:", err);
+    console.error("GDS Cars error:", err);
     res.status(err.status || 500).json({ 
-      error: err.message || "Failed to execute Duffel Cars search",
+      error: err.message || "Failed to execute fleet search",
       details: err.errors || err.meta || err
     });
   }
 });
 
-// 4. GET /api/duffel/place_suggestions
-app.get('/api/duffel/place_suggestions', async (req, res) => {
+// 4. GET /api/travel/place_suggestions
+app.get('/api/travel/place_suggestions', async (req, res) => {
   try {
     const token = getDuffelToken();
     if (!token) {
-      return res.status(401).json({ error: "Missing VITE_DUFFEL_API_KEY." });
+      return res.status(401).json({ error: "Missing live GDS API token." });
     }
     const query = req.query.query || '';
     if (query.trim().length < 2) {
@@ -142,19 +142,19 @@ app.get('/api/duffel/place_suggestions', async (req, res) => {
     const suggestions = await duffel.suggestions.list({ query });
     res.status(200).json({ data: suggestions.data });
   } catch (err) {
-    console.error("Duffel suggestions error:", err);
+    console.error("GDS suggestions error:", err);
     res.status(500).json({ 
       error: err.message || "Failed to fetch place suggestions"
     });
   }
 });
 
-// 5. POST /api/duffel/air/orders
-app.post('/api/duffel/air/orders', async (req, res) => {
+// 5. POST /api/travel/air/orders
+app.post('/api/travel/air/orders', async (req, res) => {
   try {
     const token = getDuffelToken();
     if (!token) {
-      return res.status(401).json({ error: "Missing VITE_DUFFEL_API_KEY." });
+      return res.status(401).json({ error: "Missing live GDS API token." });
     }
     const duffel = new Duffel({ token });
     const { selected_offers = [], passengers = [], payments = [] } = req.body;
@@ -168,9 +168,9 @@ app.post('/api/duffel/air/orders', async (req, res) => {
 
     res.status(200).json({ data: order.data });
   } catch (err) {
-    console.error("Duffel Orders error:", err);
+    console.error("GDS Orders error:", err);
     res.status(err.status || 500).json({ 
-      error: err.message || "Failed to execute Duffel order creation",
+      error: err.message || "Failed to execute order creation",
       details: err.errors || err.meta || err
     });
   }

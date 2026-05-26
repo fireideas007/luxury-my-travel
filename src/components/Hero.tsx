@@ -57,7 +57,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, triggerApiLog }) => {
     }
 
     try {
-      const res = await fetch(`/api/duffel/place_suggestions?query=${encodeURIComponent(val)}`);
+      const res = await fetch(`/api/travel/place_suggestions?query=${encodeURIComponent(val)}`);
       if (res.ok) {
         const json = await res.json();
         if (json.data && json.data.length > 0) {
