@@ -87,9 +87,25 @@ export const BlogSystem: React.FC<BlogSystemProps> = ({ triggerApiLog }) => {
     const savedPosts = localStorage.getItem('luxetravel_blog_posts');
     if (savedPosts) {
       try {
-        setPosts(JSON.parse(savedPosts));
+        const parsed = JSON.parse(savedPosts);
+        // Make sure all initial blog posts are loaded and merged by ID
+        const merged = [...parsed];
+        initialBlogPosts.forEach(initial => {
+          if (!merged.some(p => p.id === initial.id)) {
+            merged.push(initial);
+          } else {
+            // Update existing post content if we refined/updated it
+            const idx = merged.findIndex(p => p.id === initial.id);
+            if (idx > -1) {
+              merged[idx] = initial;
+            }
+          }
+        });
+        setPosts(merged);
+        localStorage.setItem('luxetravel_blog_posts', JSON.stringify(merged));
       } catch (e) {
         setPosts(initialBlogPosts);
+        localStorage.setItem('luxetravel_blog_posts', JSON.stringify(initialBlogPosts));
       }
     } else {
       setPosts(initialBlogPosts);
@@ -363,7 +379,19 @@ export const BlogSystem: React.FC<BlogSystemProps> = ({ triggerApiLog }) => {
       post.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
       
     const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    
+    // Enforce 1 article daily release flow: hide future articles from standard visitors
+    let isReleased = true;
+    if (!isAuthorLoggedIn && post.publishedDate) {
+      const postDate = new Date(post.publishedDate);
+      const today = new Date();
+      // Set to midnight for date-only comparison
+      postDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      isReleased = postDate <= today;
+    }
+
+    return matchesSearch && matchesCategory && isReleased;
   });
 
   return (
