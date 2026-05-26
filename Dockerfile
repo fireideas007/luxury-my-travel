@@ -13,9 +13,10 @@ COPY package*.json ./
 RUN npm install --only=production
 COPY --from=builder /app/dist ./dist
 COPY server.js ./
+COPY certs/ ./certs/
 
-# Expose port 8080 matching our Express configuration
-EXPOSE 8080
+# Expose port 8080 and port 443 matching our HTTPS/HTTP configuration
+EXPOSE 8080 443
 ENV PORT=8080
 ENV NODE_ENV=production
 
