@@ -690,9 +690,10 @@ export const Itinerary: React.FC<ItineraryProps> = ({
   }
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '5rem' }} className="animate-fade-in">
+    <div style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '5rem' }}>
       
-      {/* Page header */}
+      <div className="animate-fade-in">
+        {/* Page header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
         <div>
           <h2 style={{ fontSize: '2.5rem', fontWeight: 400 }}>Your Custom Journey</h2>
@@ -1131,6 +1132,7 @@ export const Itinerary: React.FC<ItineraryProps> = ({
           </div>
         </div>
       )}
+      </div>
 
 
       {/* INTERACTIVE PASSENGER FORM & SEAT SELECTOR MODAL */}
