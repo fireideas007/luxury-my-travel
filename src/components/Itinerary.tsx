@@ -1104,7 +1104,7 @@ export const Itinerary: React.FC<ItineraryProps> = ({
               color: 'var(--color-text-muted)'
             }}>
               <span>Status: **Ticketed / Confirmed**</span>
-              <span>LuxeTravel Aviation Partner Alliance &copy; 2026</span>
+              <span>Luxury My Travel Aviation Partner Alliance &copy; 2026</span>
             </div>
           </div>
 

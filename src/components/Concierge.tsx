@@ -22,7 +22,7 @@ export const Concierge: React.FC<ConciergeProps> = ({ onAddToItinerary, triggerA
     {
       id: 'welcome',
       sender: 'concierge',
-      text: 'Good day. I am your personal LuxeTravel Concierge. Tell me where you wish to journey, or let me design an exquisite itinerary of private aviation, superyachts, 5-star sanctuaries, and fine dining.',
+      text: 'Good day. I am your personal Luxury My Travel Concierge. Tell me where you wish to journey, or let me design an exquisite itinerary of private aviation, superyachts, 5-star sanctuaries, and fine dining.',
       timestamp: new Date()
     }
   ]);

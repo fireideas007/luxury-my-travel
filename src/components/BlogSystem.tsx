@@ -121,7 +121,7 @@ export const BlogSystem: React.FC<BlogSystemProps> = ({ triggerApiLog }) => {
 
     if (selectedPost) {
       // 1. Update title
-      document.title = `${selectedPost.title} | LuxeTravel Editorial`;
+      document.title = `${selectedPost.title} | Luxury My Travel Editorial`;
 
       // 2. Update meta description
       let metaDesc = document.querySelector('meta[name="description"]');
@@ -156,7 +156,7 @@ export const BlogSystem: React.FC<BlogSystemProps> = ({ triggerApiLog }) => {
         },
         "publisher": {
           "@type": "Organization",
-          "name": "LuxeTravel Curations",
+          "name": "Luxury My Travel",
           "logo": {
             "@type": "ImageObject",
             "url": "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&q=80&w=800"
@@ -165,7 +165,7 @@ export const BlogSystem: React.FC<BlogSystemProps> = ({ triggerApiLog }) => {
       });
     } else {
       // Restore default SEO settings
-      document.title = "Luxury Insights & Editorial Magazine | LuxeTravel";
+      document.title = "Luxury Insights & Editorial Magazine | Luxury My Travel";
       
       let metaDesc = document.querySelector('meta[name="description"]');
       if (metaDesc) {
@@ -553,7 +553,7 @@ export const BlogSystem: React.FC<BlogSystemProps> = ({ triggerApiLog }) => {
           }}>
             <div>
               <span style={{ color: 'var(--color-gold)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600 }}>
-                LuxeTravel Magazine
+                Luxury My Travel Magazine
               </span>
               <h1 style={{ fontSize: '3rem', fontFamily: 'var(--font-serif)', fontWeight: 400, color: 'var(--color-text-primary)', marginTop: '0.25rem' }}>
                 Luxury Insights
@@ -949,7 +949,7 @@ export const BlogSystem: React.FC<BlogSystemProps> = ({ triggerApiLog }) => {
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                   <h3 style={{ fontSize: '1.6rem', fontFamily: 'var(--font-serif)', fontWeight: 400 }}>Editorial Registry</h3>
                   <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
-                    LuxeTravel publishing staff access gateway
+                    Luxury My Travel publishing staff access gateway
                   </p>
                 </div>
 

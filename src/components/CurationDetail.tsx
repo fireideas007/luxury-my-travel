@@ -182,7 +182,7 @@ export const CurationDetail: React.FC<CurationDetailProps> = ({
 
     // SEO updates
     const prevTitle = document.title;
-    document.title = `${name} | LuxeTravel Curation`;
+    document.title = `${name} | Luxury My Travel Curation`;
 
     let metaDesc = document.querySelector('meta[name="description"]');
     const prevDesc = metaDesc ? metaDesc.getAttribute('content') : '';
@@ -611,7 +611,7 @@ export const CurationDetail: React.FC<CurationDetailProps> = ({
                 color: 'var(--color-text-muted)',
                 marginTop: '0.5rem'
               }}>
-                Fully backed by LuxeTravel Bespoke Guarantee & Priority Booking Channels.
+                Fully backed by Luxury My Travel Bespoke Guarantee & Priority Booking Channels.
               </div>
             </div>
           </div>

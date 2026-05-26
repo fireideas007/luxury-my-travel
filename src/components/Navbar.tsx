@@ -50,11 +50,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           <Landmark size={24} style={{ color: 'var(--color-gold)' }} />
           <span style={{ 
             fontFamily: 'var(--font-serif)', 
-            fontSize: '1.6rem', 
+            fontSize: '1.5rem', 
             fontWeight: 600, 
-            letterSpacing: '0.05em' 
+            letterSpacing: '0.03em' 
           }}>
-            Luxe<span className="luxury-text-gradient">Travel</span>
+            Luxury <span className="luxury-text-gradient">My Travel</span>
           </span>
         </div>
 
