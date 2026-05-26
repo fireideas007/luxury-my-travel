@@ -1,0 +1,12 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "Serverless API backend for Luxury My Travel",
+  "main": "src/functions/*.js",
+  "dependencies": {
+    "@duffel/api": "^4.0.0"
+  },
+  "devDependencies": {
+    "@azure/functions": "^4.0.0"
+  }
+}
