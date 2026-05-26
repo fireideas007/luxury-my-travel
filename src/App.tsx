@@ -6,6 +6,7 @@ import { CurationDetail } from './components/CurationDetail';
 import { Itinerary } from './components/Itinerary';
 import { Concierge } from './components/Concierge';
 import { BlogSystem } from './components/BlogSystem';
+import { AboutUs } from './components/AboutUs';
 import type { LuxuryItem } from './data/mockData';
 import { allLuxuryItems } from './data/mockData';
 import { ShieldCheck, ArrowRight } from 'lucide-react';
@@ -978,6 +979,12 @@ function App() {
             />
           </div>
         )}
+
+        {activeTab === 'about' && (
+          <div className="luxury-container" style={{ marginTop: '3rem' }}>
+            <AboutUs onBackToCatalog={() => setActiveTab('explore')} />
+          </div>
+        )}
       </main>
       {/* Footer */}
       <footer style={{
@@ -988,15 +995,35 @@ function App() {
         marginTop: 'auto'
       }}>
         <div className="luxury-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', color: 'var(--color-text-primary)' }}>
-            Luxe<span style={{ color: 'var(--color-gold)' }}>Travel</span> Curations
+          <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => setActiveTab('explore')}>
+            Luxury My Travel
           </span>
-          <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', maxWidth: '400px' }}>
-            A premium demonstration of luxury hospitality API mappings. Built with React and high-fidelity custom design systems.
+          <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', maxWidth: '500px' }}>
+            A premium curation of ultra luxury service providers meant for the elite. Works with realtime AI agents for luxury hospitality.
           </p>
-          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-            &copy; 2026 LuxeTravel Technologies Inc. All privileges reserved.
-          </span>
+          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+              &copy; 2026 Luxury My Travel. All privileges reserved.
+            </span>
+            <span style={{ color: 'rgba(255,255,255,0.1)' }}>|</span>
+            <button 
+              onClick={() => setActiveTab('about')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--color-gold)',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+                padding: 0,
+                transition: 'var(--transition-smooth)'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-gold-light)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-gold)'}
+            >
+              About Us & Legal Info
+            </button>
+          </div>
         </div>
       </footer>
 
