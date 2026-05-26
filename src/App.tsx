@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ItemGrid } from './components/ItemGrid';
+import { CurationDetail } from './components/CurationDetail';
 import { Itinerary } from './components/Itinerary';
 import { Concierge } from './components/Concierge';
 import { BlogSystem } from './components/BlogSystem';
@@ -404,6 +405,7 @@ const generateDynamicFlights = (origin: string, destination: string): LuxuryItem
 
 function App() {
   const [activeTab, setActiveTab] = useState<string>('explore');
+  const [selectedCuration, setSelectedCuration] = useState<LuxuryItem | null>(null);
   const [itinerary, setItinerary] = useState<LuxuryItem[]>([]);
   const [autoCheckout, setAutoCheckout] = useState<boolean>(false);
   
@@ -624,6 +626,7 @@ function App() {
     lng?: number,
     skipScroll?: boolean
   ) => {
+    setSelectedCuration(null);
     setCurrentCategory(category === 'all' ? 'all' : category);
     setSearchQuery(query);
     setSearchLocation(location);
@@ -818,7 +821,12 @@ function App() {
       {/* Sticky Header Navbar */}
       <Navbar 
         activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'explore') {
+            setSelectedCuration(null);
+          }
+        }} 
         itineraryCount={itinerary.length}
         currentUser={currentUser}
         onOpenAuth={() => setIsAuthOpen(true)}
@@ -830,98 +838,115 @@ function App() {
       <main style={{ flex: 1, paddingBottom: '5rem' }}>
         {activeTab === 'explore' && (
           <div>
-            <Hero onSearch={handleSearch} triggerApiLog={triggerApiLog} />
-            
-            {/* Recommendations Grid Wrapper */}
-            <div id="recommendations-grid" className="luxury-container animate-fade-in" style={{ marginTop: '2rem' }}>
-              
-              {/* Grid Segment filter headers */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: '1rem',
-                marginBottom: '3rem',
-                flexWrap: 'wrap'
-              }}>
-                {[
-                  { id: 'all', label: 'All Curations' },
-                  { id: 'travel', label: 'Travel' },
-                  { id: 'stay', label: 'Stays' },
-                  { id: 'food', label: 'Food & Dining' },
-                  { id: 'experience', label: 'Experiences' }
-                ].map(cat => (
-                  <button
-                    key={cat.id}
-                    onClick={() => {
-                      setCurrentCategory(cat.id);
-                      setSearchQuery('');
-                      setSearchLocation('');
-                    }}
-                    style={{
-                      background: currentCategory === cat.id ? 'var(--grad-gold)' : 'transparent',
-                      border: currentCategory === cat.id ? 'none' : '1px solid var(--color-border)',
-                      color: currentCategory === cat.id ? '#060608' : 'var(--color-text-secondary)',
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '0.85rem',
-                      fontWeight: 600,
-                      padding: '0.6rem 1.5rem',
-                      borderRadius: '30px',
-                      cursor: 'pointer',
-                      transition: 'var(--transition-smooth)',
-                      boxShadow: currentCategory === cat.id ? '0 4px 10px rgba(223, 195, 132, 0.2)' : 'none'
-                    }}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
-              </div>
-
-              <ItemGrid 
-                items={filteredItems} 
+            {selectedCuration ? (
+              <CurationDetail 
+                item={selectedCuration}
+                onBack={() => setSelectedCuration(null)}
                 onAddToItinerary={handleAddToItinerary}
                 triggerApiLog={triggerApiLog}
                 formatPrice={formatPrice}
+                allRecommendations={allLuxuryItems}
+                onSelectRelated={setSelectedCuration}
               />
-            </div>
-            
-            {/* Showcase details area */}
-            <section className="glass-panel" style={{
-              margin: '6rem auto 3rem auto',
-              width: 'calc(100% - 4rem)',
-              maxWidth: '1200px',
-              padding: '3.5rem',
-              borderRadius: 'var(--radius-xl)',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: 'radial-gradient(ellipse at center, rgba(223, 195, 132, 0.04) 0%, rgba(6, 6, 8, 0) 70%)',
-                zIndex: -1
-              }} />
-              <ShieldCheck size={40} style={{ color: 'var(--color-gold)', marginBottom: '1.5rem' }} />
-              <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-serif)', marginBottom: '1rem', fontWeight: 400 }}>
-                High-Fidelity Connected Infrastructure
-              </h3>
-              <p style={{ color: 'var(--color-text-secondary)', maxWidth: '700px', margin: '0 auto 2.5rem auto', lineHeight: '1.8' }}>
-                Every reservation made on LuxeTravel connects directly to international booking standards. We integrate with 
-                <strong>Private Aviation GDS</strong> for aircraft details and seating, <strong>Luxury Lodges Consortium</strong> for luxury hotels and charters, 
-                and <strong>Elite Hospitality Registry</strong> for dining and activities verification.
-              </p>
-              <button 
-                onClick={() => setActiveTab('concierge')}
-                className="btn-primary"
-                style={{ gap: '0.75rem' }}
-              >
-                <span>Consult Luxury Concierge</span>
-                <ArrowRight size={16} />
-              </button>
-            </section>
+            ) : (
+              <>
+                <Hero onSearch={handleSearch} triggerApiLog={triggerApiLog} />
+                
+                {/* Recommendations Grid Wrapper */}
+                <div id="recommendations-grid" className="luxury-container animate-fade-in" style={{ marginTop: '2rem' }}>
+                  
+                  {/* Grid Segment filter headers */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '1rem',
+                    marginBottom: '3rem',
+                    flexWrap: 'wrap'
+                  }}>
+                    {[
+                      { id: 'all', label: 'All Curations' },
+                      { id: 'travel', label: 'Travel' },
+                      { id: 'stay', label: 'Stays' },
+                      { id: 'food', label: 'Food & Dining' },
+                      { id: 'experience', label: 'Experiences' }
+                    ].map(cat => (
+                      <button
+                        key={cat.id}
+                        onClick={() => {
+                          setSelectedCuration(null);
+                          setCurrentCategory(cat.id);
+                          setSearchQuery('');
+                          setSearchLocation('');
+                        }}
+                        style={{
+                          background: currentCategory === cat.id ? 'var(--grad-gold)' : 'transparent',
+                          border: currentCategory === cat.id ? 'none' : '1px solid var(--color-border)',
+                          color: currentCategory === cat.id ? '#060608' : 'var(--color-text-secondary)',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          padding: '0.6rem 1.5rem',
+                          borderRadius: '30px',
+                          cursor: 'pointer',
+                          transition: 'var(--transition-smooth)',
+                          boxShadow: currentCategory === cat.id ? '0 4px 10px rgba(223, 195, 132, 0.2)' : 'none'
+                        }}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <ItemGrid 
+                    items={filteredItems} 
+                    onAddToItinerary={handleAddToItinerary}
+                    onSelectItem={setSelectedCuration}
+                    triggerApiLog={triggerApiLog}
+                    formatPrice={formatPrice}
+                  />
+                </div>
+                
+                {/* Showcase details area */}
+                <section className="glass-panel" style={{
+                  margin: '6rem auto 3rem auto',
+                  width: 'calc(100% - 4rem)',
+                  maxWidth: '1200px',
+                  padding: '3.5rem',
+                  borderRadius: 'var(--radius-xl)',
+                  textAlign: 'center',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    background: 'radial-gradient(ellipse at center, rgba(223, 195, 132, 0.04) 0%, rgba(6, 6, 8, 0) 70%)',
+                    zIndex: -1
+                  }} />
+                  <ShieldCheck size={40} style={{ color: 'var(--color-gold)', marginBottom: '1.5rem' }} />
+                  <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-serif)', marginBottom: '1rem', fontWeight: 400 }}>
+                    High-Fidelity Connected Infrastructure
+                  </h3>
+                  <p style={{ color: 'var(--color-text-secondary)', maxWidth: '600px', margin: '0 auto 2.5rem auto', fontSize: '0.95rem' }}>
+                    Luxury My Travel interacts directly with partner environments representing live booking networks. Our architecture parses flight specs and stay profiles using raw travel schemas.
+                  </p>
+                  <button 
+                    onClick={() => {
+                      const apiTab = document.getElementById('btn-navbar-api-sandbox');
+                      if (apiTab) apiTab.click();
+                    }}
+                    className="btn-primary"
+                    style={{ fontSize: '0.8rem', padding: '0.75rem 1.75rem' }}
+                  >
+                    <span>Observe API Payload Inspector</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </section>
+              </>
+            )}
           </div>
         )}
 

@@ -146,7 +146,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 color: 'var(--color-gold)'
               }}
             >
-              <UserCheck size={16} />
+              {currentUser.avatarUrl ? (
+                <img 
+                  src={currentUser.avatarUrl} 
+                  alt={currentUser.username} 
+                  style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} 
+                />
+              ) : (
+                <UserCheck size={16} />
+              )}
               <span className="desktop-only">{currentUser.username.split(' ')[0]} ✦ Onyx</span>
             </button>
           ) : (

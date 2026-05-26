@@ -37,6 +37,51 @@ export const BlogSystem: React.FC<BlogSystemProps> = ({ triggerApiLog }) => {
   const [formTags, setFormTags] = useState('');
   const [formError, setFormError] = useState('');
 
+  // Staff Password Recovery states
+  const [isStaffForgot, setIsStaffForgot] = useState(false);
+  const [staffForgotStep, setStaffForgotStep] = useState<1 | 2>(1);
+  const [staffForgotEmail, setStaffForgotEmail] = useState('');
+  const [staffForgotName, setStaffForgotName] = useState('');
+  const [staffForgotNewPass, setStaffForgotNewPass] = useState('');
+  const [staffForgotConfirmPass, setStaffForgotConfirmPass] = useState('');
+  const [staffResetSuccess, setStaffResetSuccess] = useState<string | null>(null);
+
+  const handleStaffForgotVerify = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+
+    const matched = STAFF_CREDENTIALS.find(
+      s => s.email.toLowerCase() === staffForgotEmail.toLowerCase() &&
+           s.name.toLowerCase() === staffForgotName.toLowerCase()
+    );
+
+    if (matched || (AUTHOR_CREDENTIALS.email.toLowerCase() === staffForgotEmail.toLowerCase() && AUTHOR_CREDENTIALS.name.toLowerCase() === staffForgotName.toLowerCase())) {
+      setStaffForgotStep(2);
+    } else {
+      setLoginError('No matching staff credentials found in editorial directory.');
+    }
+  };
+
+  const handleStaffForgotReset = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+
+    if (staffForgotNewPass !== staffForgotConfirmPass) {
+      setLoginError('Passwords do not match.');
+      return;
+    }
+
+    const overridesStr = localStorage.getItem('luxetravel_staff_overrides') || '{}';
+    const overrides = JSON.parse(overridesStr);
+    overrides[staffForgotEmail.toLowerCase()] = staffForgotNewPass;
+    localStorage.setItem('luxetravel_staff_overrides', JSON.stringify(overrides));
+
+    setStaffResetSuccess('Staff password successfully updated. Please authenticate.');
+    setIsStaffForgot(false);
+    setAuthorEmail(staffForgotEmail);
+    setAuthorPassword('');
+  };
+
   // Initial load
   useEffect(() => {
     const savedPosts = localStorage.getItem('luxetravel_blog_posts');
@@ -144,9 +189,25 @@ export const BlogSystem: React.FC<BlogSystemProps> = ({ triggerApiLog }) => {
   // Handle Author Login
   const handleAuthorLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const matched = STAFF_CREDENTIALS.find(
-      s => s.email.toLowerCase() === authorEmail.toLowerCase() && s.password === authorPassword
+    setLoginError('');
+    setStaffResetSuccess(null);
+
+    const overridesStr = localStorage.getItem('luxetravel_staff_overrides') || '{}';
+    const overrides = JSON.parse(overridesStr);
+
+    const checkPassword = (emailAddress: string, defaultPass: string) => {
+      return overrides[emailAddress.toLowerCase()] || defaultPass;
+    };
+
+    let matched: any = STAFF_CREDENTIALS.find(
+      s => s.email.toLowerCase() === authorEmail.toLowerCase() && 
+           checkPassword(s.email, s.password) === authorPassword
     );
+
+    if (!matched && AUTHOR_CREDENTIALS.email.toLowerCase() === authorEmail.toLowerCase() && checkPassword(AUTHOR_CREDENTIALS.email, AUTHOR_CREDENTIALS.password) === authorPassword) {
+      matched = AUTHOR_CREDENTIALS;
+    }
+
     if (matched) {
       setIsAuthorLoggedIn(true);
       setLoggedInStaff(matched);
@@ -791,75 +852,194 @@ export const BlogSystem: React.FC<BlogSystemProps> = ({ triggerApiLog }) => {
               <X size={18} />
             </button>
 
-            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-              <h3 style={{ fontSize: '1.6rem', fontFamily: 'var(--font-serif)', fontWeight: 400 }}>Editorial Registry</h3>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
-                LuxeTravel publishing staff access gateway
-              </p>
-            </div>
-
-            <form onSubmit={handleAuthorLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Editorial Email
-                </label>
-                <input
-                  id="input-author-email"
-                  type="email"
-                  required
-                  placeholder="editor@luxurymytravel.com"
-                  value={authorEmail}
-                  onChange={(e) => setAuthorEmail(e.target.value)}
-                  style={{
-                    background: '#09090c',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--color-text-primary)',
-                    padding: '0.6rem 0.8rem',
-                    fontSize: '0.9rem',
-                    outline: 'none'
-                  }}
-                />
+            {staffResetSuccess && (
+              <div style={{ color: 'var(--color-success)', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '0.6rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.8rem', textAlign: 'center' }}>
+                {staffResetSuccess}
               </div>
+            )}
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Staff Password
-                </label>
-                <input
-                  id="input-author-password"
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={authorPassword}
-                  onChange={(e) => setAuthorPassword(e.target.value)}
-                  style={{
-                    background: '#09090c',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--color-text-primary)',
-                    padding: '0.6rem 0.8rem',
-                    fontSize: '0.9rem',
-                    outline: 'none'
-                  }}
-                />
-              </div>
-
-              {loginError && (
-                <div style={{ color: '#ef4444', fontSize: '0.8rem', textAlign: 'center' }}>
-                  {loginError}
+            {isStaffForgot ? (
+              <div>
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                  <h3 style={{ fontSize: '1.6rem', fontFamily: 'var(--font-serif)', fontWeight: 400 }}>Recover Credentials</h3>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                    {staffForgotStep === 1 ? 'Verify editorial credentials registry' : 'Define new secure publishing password'}
+                  </p>
                 </div>
-              )}
 
-              <button
-                id="btn-login-submit"
-                type="submit"
-                className="btn-primary"
-                style={{ width: '100%', padding: '0.7rem', marginTop: '0.5rem', fontWeight: 600 }}
-              >
-                Authenticate & Enter
-              </button>
-            </form>
+                {staffForgotStep === 1 ? (
+                  <form onSubmit={handleStaffForgotVerify} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Staff Email</label>
+                      <input 
+                        type="email" 
+                        required
+                        value={staffForgotEmail}
+                        onChange={(e) => setStaffForgotEmail(e.target.value)}
+                        placeholder="editor@luxurymytravel.com"
+                        style={{ background: '#09090c', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-primary)', padding: '0.6rem 0.8rem', fontSize: '0.9rem', outline: 'none' }}
+                      />
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Full Name</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={staffForgotName}
+                        onChange={(e) => setStaffForgotName(e.target.value)}
+                        placeholder="Alastair Vance"
+                        style={{ background: '#09090c', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-primary)', padding: '0.6rem 0.8rem', fontSize: '0.9rem', outline: 'none' }}
+                      />
+                    </div>
+
+                    {loginError && (
+                      <div style={{ color: '#ef4444', fontSize: '0.8rem', textAlign: 'center' }}>
+                        {loginError}
+                      </div>
+                    )}
+
+                    <button type="submit" className="btn-primary" style={{ width: '100%', padding: '0.7rem', fontWeight: 600 }}>
+                      Verify Credentials
+                    </button>
+                    <button type="button" onClick={() => setIsStaffForgot(false)} className="btn-secondary" style={{ width: '100%', padding: '0.6rem', fontSize: '0.85rem' }}>
+                      Return to Sign In
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleStaffForgotReset} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>New Password</label>
+                      <input 
+                        type="password" 
+                        required
+                        value={staffForgotNewPass}
+                        onChange={(e) => setStaffForgotNewPass(e.target.value)}
+                        placeholder="••••••••"
+                        style={{ background: '#09090c', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-primary)', padding: '0.6rem 0.8rem', fontSize: '0.9rem', outline: 'none' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Confirm Password</label>
+                      <input 
+                        type="password" 
+                        required
+                        value={staffForgotConfirmPass}
+                        onChange={(e) => setStaffForgotConfirmPass(e.target.value)}
+                        placeholder="••••••••"
+                        style={{ background: '#09090c', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-primary)', padding: '0.6rem 0.8rem', fontSize: '0.9rem', outline: 'none' }}
+                      />
+                    </div>
+
+                    {loginError && (
+                      <div style={{ color: '#ef4444', fontSize: '0.8rem', textAlign: 'center' }}>
+                        {loginError}
+                      </div>
+                    )}
+
+                    <button type="submit" className="btn-primary" style={{ width: '100%', padding: '0.7rem', fontWeight: 600 }}>
+                      Reset Password
+                    </button>
+                  </form>
+                )}
+              </div>
+            ) : (
+              <div>
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                  <h3 style={{ fontSize: '1.6rem', fontFamily: 'var(--font-serif)', fontWeight: 400 }}>Editorial Registry</h3>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                    LuxeTravel publishing staff access gateway
+                  </p>
+                </div>
+
+                <form onSubmit={handleAuthorLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Editorial Email
+                    </label>
+                    <input
+                      id="input-author-email"
+                      type="email"
+                      required
+                      placeholder="editor@luxurymytravel.com"
+                      value={authorEmail}
+                      onChange={(e) => setAuthorEmail(e.target.value)}
+                      style={{
+                        background: '#09090c',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-md)',
+                        color: 'var(--color-text-primary)',
+                        padding: '0.6rem 0.8rem',
+                        fontSize: '0.9rem',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Staff Password
+                    </label>
+                    <input
+                      id="input-author-password"
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      value={authorPassword}
+                      onChange={(e) => setAuthorPassword(e.target.value)}
+                      style={{
+                        background: '#09090c',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-md)',
+                        color: 'var(--color-text-primary)',
+                        padding: '0.6rem 0.8rem',
+                        fontSize: '0.9rem',
+                        outline: 'none'
+                      }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.2rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsStaffForgot(true);
+                          setStaffForgotStep(1);
+                          setStaffForgotEmail(authorEmail);
+                          setStaffForgotName('');
+                          setLoginError('');
+                          setStaffResetSuccess(null);
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--color-gold)',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          textDecoration: 'underline'
+                        }}
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                  </div>
+
+                  {loginError && (
+                    <div style={{ color: '#ef4444', fontSize: '0.8rem', textAlign: 'center' }}>
+                      {loginError}
+                    </div>
+                  )}
+
+                  <button
+                    id="btn-login-submit"
+                    type="submit"
+                    className="btn-primary"
+                    style={{ width: '100%', padding: '0.7rem', marginTop: '0.5rem', fontWeight: 600 }}
+                  >
+                    Authenticate & Enter
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
         </div>
       )}

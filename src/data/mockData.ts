@@ -34,6 +34,9 @@ export interface BookedCuration {
 export interface UserAccount {
   username: string;
   email: string;
+  password?: string;
+  avatarUrl?: string;
+  authProvider?: 'local' | 'google';
   title: string;
   bornOn: string;
   phoneNumber: string;
