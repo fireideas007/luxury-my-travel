@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import type { LuxuryItem } from '../data/mockData';
 import { Star, ShieldCheck, Plus, Sparkles, HelpCircle, Layers, Check } from 'lucide-react';

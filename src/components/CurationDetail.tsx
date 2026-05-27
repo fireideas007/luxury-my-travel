@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect } from 'react';
 import type { LuxuryItem } from '../data/mockData';
 import { ArrowLeft, Star, ShieldCheck, Layers, Plus, MapPin, Check } from 'lucide-react';

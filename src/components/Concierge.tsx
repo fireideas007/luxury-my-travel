@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, User, Plus, Layers, Check } from 'lucide-react';
 import type { LuxuryItem } from '../data/mockData';

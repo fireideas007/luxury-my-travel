@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { Plane, Home, Utensils, Compass, Search, Users, MapPin, Calendar } from 'lucide-react';
 

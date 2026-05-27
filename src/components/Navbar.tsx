@@ -1,10 +1,14 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Menu, X, Landmark, User, UserCheck } from 'lucide-react';
 import type { UserAccount } from '../data/mockData';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface NavbarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
   itineraryCount: number;
   currentUser: UserAccount | null;
   onOpenAuth: () => void;
@@ -13,7 +17,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  activeTab,
+  activeTab: propActiveTab,
   setActiveTab,
   itineraryCount,
   currentUser,
@@ -22,12 +26,21 @@ export const Navbar: React.FC<NavbarProps> = ({
   setCurrentCurrency
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // Derive active tab from pathname if not explicitly provided as prop
+  let activeTab = propActiveTab || 'explore';
+  if (pathname === '/concierge') activeTab = 'concierge';
+  else if (pathname.startsWith('/blog')) activeTab = 'blog';
+  else if (pathname === '/itinerary') activeTab = 'itinerary';
+  else if (pathname === '/') activeTab = 'explore';
 
   const navItems = [
-    { id: 'explore', label: 'Explore Curations' },
-    { id: 'concierge', label: 'Bespoke Concierge' },
-    { id: 'blog', label: 'Editorial Magazine' },
-    { id: 'itinerary', label: 'My Itinerary' }
+    { id: 'explore', label: 'Explore Curations', path: '/' },
+    { id: 'concierge', label: 'Bespoke Concierge', path: '/concierge' },
+    { id: 'blog', label: 'Editorial Magazine', path: '/blog' },
+    { id: 'itinerary', label: 'My Itinerary', path: '/itinerary' }
   ];
 
   return (
@@ -43,8 +56,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {/* Brand Logo */}
-        <div 
-          onClick={() => setActiveTab('explore')}
+        <Link 
+          href="/"
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
         >
           <Landmark size={24} style={{ color: 'var(--color-gold)' }} />
@@ -56,14 +69,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           }}>
             Luxury <span className="luxury-text-gradient">My Travel</span>
           </span>
-        </div>
+        </Link>
 
         {/* Desktop Nav Links */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }} className="desktop-only">
           {navItems.map((item) => (
-            <button
+            <Link
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              href={item.path}
               style={{
                 background: 'none',
                 border: 'none',
@@ -99,7 +112,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {itineraryCount}
                 </span>
               )}
-            </button>
+            </Link>
           ))}
         </div>
 
@@ -232,10 +245,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {navItems.map((item) => (
-            <button
+            <Link
               key={item.id}
+              href={item.path}
               onClick={() => {
-                setActiveTab(item.id);
                 setMobileMenuOpen(false);
               }}
               style={{
@@ -266,7 +279,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {itineraryCount}
                 </span>
               )}
-            </button>
+            </Link>
           ))}
         </div>
       )}

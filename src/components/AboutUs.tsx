@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { ShieldCheck, Compass, Anchor, Star, ArrowLeft } from 'lucide-react';
 

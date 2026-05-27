@@ -183,7 +183,7 @@ export const Itinerary: React.FC<ItineraryProps> = ({
       );
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_StlFu2ZPGSbtgm',
+        key: (typeof window !== 'undefined' && window.ENV?.VITE_RAZORPAY_KEY_ID) || 'rzp_test_StlFu2ZPGSbtgm',
         amount: amountSubunit,
         currency: currentCurrency,
         name: 'Luxury My Travel',

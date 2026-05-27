@@ -54,7 +54,7 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
 
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const clientId = (typeof window !== 'undefined' && window.ENV?.VITE_GOOGLE_CLIENT_ID) || '';
     if (clientId) {
       const initGsi = () => {
         try {
@@ -1056,7 +1056,7 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({
                       <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
                     </div>
 
-                    {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+                    {(typeof window !== 'undefined' && window.ENV?.VITE_GOOGLE_CLIENT_ID) ? (
                       <div id="google-official-btn" style={{ width: '100%', display: 'flex', justifyContent: 'center' }} />
                     ) : (
                       <button

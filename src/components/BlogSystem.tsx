@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import type { BlogPost } from '../data/blogData';
 import { AUTHOR_CREDENTIALS, STAFF_CREDENTIALS, initialBlogPosts } from '../data/blogData';
