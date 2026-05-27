@@ -1,23 +1,13 @@
-# Stage 1: Build Next.js application
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-
-# Stage 2: Production runtime
 FROM node:20-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
 
-# Next.js standalone build places the server script in .next/standalone/server.js
-# Copying it to root allows executing standard node server.js
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+# Copy the pre-built standalone server files directly
+# This avoids running CPU-heavy npm install and next build on the low-resource EC2 instance
+COPY .next/standalone ./
+COPY .next/static ./.next/static
+COPY public ./public
 
 # Expose port 8080 matching AWS Beanstalk load balancer expectations
 EXPOSE 8080
