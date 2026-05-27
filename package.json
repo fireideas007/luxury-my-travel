@@ -15,6 +15,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "lucide-react": "^1.16.0",
+    "posthog-js": "^1.376.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
